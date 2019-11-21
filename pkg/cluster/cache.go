@@ -11,7 +11,8 @@ var clusterCache = kubeFedClusterClients{clusters: map[string]*FedCluster{}}
 
 type kubeFedClusterClients struct {
 	sync.RWMutex
-	clusters map[string]*FedCluster
+	clusters     map[string]*FedCluster
+	refreshCache func()
 }
 
 // FedCluster stores cluster client; cluster related info and previous health check probe results
@@ -52,6 +53,12 @@ func (c *kubeFedClusterClients) getFedCluster(name string) (*FedCluster, bool) {
 	c.RLock()
 	defer c.RUnlock()
 	cluster, ok := c.clusters[name]
+	if !ok && c.refreshCache != nil {
+		c.RUnlock()
+		c.refreshCache()
+		c.RLock()
+	}
+	cluster, ok = c.clusters[name]
 	return cluster, ok
 }
 
