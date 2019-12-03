@@ -1,7 +1,7 @@
 module github.com/codeready-toolchain/toolchain-common
 
 require (
-	github.com/codeready-toolchain/api v0.0.0-20191129104300-b4af5bf7d40a
+	github.com/codeready-toolchain/api v0.0.0-20191203182149-f994640853b0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-logr/logr v0.1.0
 	github.com/lestrrat-go/jwx v0.9.0
@@ -15,7 +15,6 @@ require (
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/h2non/gock.v1 v1.0.14
 	gopkg.in/square/go-jose.v2 v2.3.0
-	gopkg.in/yaml.v2 v2.2.2
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.0.0
 	k8s.io/apiextensions-apiserver v0.0.0
