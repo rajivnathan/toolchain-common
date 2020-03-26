@@ -56,6 +56,9 @@ func newEmbeddedUa(targetCluster string) toolchainv1alpha1.UserAccountEmbedded {
 							Template: "",
 						},
 					},
+					ClusterResources: &toolchainv1alpha1.NSTemplateSetClusterResources{
+						Revision: "654321a",
+					},
 				},
 			},
 		},
@@ -83,6 +86,12 @@ func StatusCondition(con toolchainv1alpha1.Condition) MurModifier {
 func MetaNamespace(namespace string) MurModifier {
 	return func(mur *toolchainv1alpha1.MasterUserRecord) {
 		mur.Namespace = namespace
+	}
+}
+
+func Finalizer(finalizer string) MurModifier {
+	return func(mur *toolchainv1alpha1.MasterUserRecord) {
+		mur.Finalizers = append(mur.Finalizers, finalizer)
 	}
 }
 

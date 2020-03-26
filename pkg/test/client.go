@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"reflect"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -17,7 +16,7 @@ import (
 )
 
 // NewFakeClient creates a fake K8s client with ability to override specific Get/List/Create/Update/StatusUpdate/Delete functions
-func NewFakeClient(t *testing.T, initObjs ...runtime.Object) *FakeClient {
+func NewFakeClient(t T, initObjs ...runtime.Object) *FakeClient {
 	s := scheme.Scheme
 	err := apis.AddToScheme(s)
 	require.NoError(t, err)
@@ -27,7 +26,7 @@ func NewFakeClient(t *testing.T, initObjs ...runtime.Object) *FakeClient {
 
 type FakeClient struct {
 	client.Client
-	T                *testing.T
+	T                T
 	MockGet          func(ctx context.Context, key client.ObjectKey, obj runtime.Object) error
 	MockList         func(ctx context.Context, list runtime.Object, opts ...client.ListOption) error
 	MockCreate       func(ctx context.Context, obj runtime.Object, opts ...client.CreateOption) error
