@@ -41,23 +41,27 @@ func newEmbeddedUa(targetCluster string) toolchainv1alpha1.UserAccountEmbedded {
 					TierName: "basic",
 					Namespaces: []toolchainv1alpha1.NSTemplateSetNamespace{
 						{
-							Type:     "dev",
-							Revision: "123abc",
-							Template: "",
+							Type:        "dev",
+							Revision:    "123abc",
+							Template:    "",
+							TemplateRef: "basic-dev-123abc",
 						},
 						{
-							Type:     "code",
-							Revision: "123abc",
-							Template: "",
+							Type:        "code",
+							Revision:    "123abc",
+							Template:    "",
+							TemplateRef: "basic-code-123abc",
 						},
 						{
-							Type:     "stage",
-							Revision: "123abc",
-							Template: "",
+							Type:        "stage",
+							Revision:    "123abc",
+							Template:    "",
+							TemplateRef: "basic-stage-123abc",
 						},
 					},
 					ClusterResources: &toolchainv1alpha1.NSTemplateSetClusterResources{
-						Revision: "654321a",
+						Revision:    "654321a",
+						TemplateRef: "basic-clusterresources-654321a",
 					},
 				},
 			},
@@ -140,6 +144,7 @@ func Namespace(nsType, revision string) UaInMurModifier {
 				for nsIndex, ns := range mur.Spec.UserAccounts[uaIndex].Spec.NSTemplateSet.Namespaces {
 					if ns.Type == nsType {
 						mur.Spec.UserAccounts[uaIndex].Spec.NSTemplateSet.Namespaces[nsIndex].Revision = revision
+						mur.Spec.UserAccounts[uaIndex].Spec.NSTemplateSet.Namespaces[nsIndex].TemplateRef = mur.Spec.UserAccounts[uaIndex].Spec.NSTemplateSet.TierName + "-" + nsType + "-" + revision
 					}
 				}
 				return
