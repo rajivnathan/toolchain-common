@@ -204,7 +204,7 @@ func coreKubefedIo_kubefedclustersYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "core.kubefed.io_kubefedclusters.yaml", size: 5406, mode: os.FileMode(420), modTime: time.Unix(1589532307, 0)}
+	info := bindataFileInfo{name: "core.kubefed.io_kubefedclusters.yaml", size: 5406, mode: os.FileMode(436), modTime: time.Unix(1590539615, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -305,7 +305,7 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"core.kubefed.io_kubefedclusters.yaml": {coreKubefedIo_kubefedclustersYaml, map[string]*bintree{}},
+	"core.kubefed.io_kubefedclusters.yaml": &bintree{coreKubefedIo_kubefedclustersYaml, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory
