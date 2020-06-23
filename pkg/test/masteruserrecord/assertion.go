@@ -158,6 +158,8 @@ func (a *Assertion) UserAccountHasTier(targetCluster string, tier toolchainv1alp
 			a.userAccountHasTier(ua, tier)
 		}
 	}
+	// also verify the label on the master user record
+	assert.Contains(a.t, a.masterUserRecord.Labels, toolchainv1alpha1.LabelKeyPrefix+tier.Name+"-tier-hash")
 	return a
 }
 
@@ -178,6 +180,12 @@ func (a *Assertion) userAccountHasTier(ua toolchainv1alpha1.UserAccountEmbedded,
 	} else {
 		assert.Equal(a.t, tier.Spec.ClusterResources.TemplateRef, ua.Spec.NSTemplateSet.ClusterResources.TemplateRef)
 	}
+
+	// also verify the labels at the MUR resource level
+	hash, err := computeTemplateRefsHash(tier)
+	require.NoError(a.t, err)
+	require.Contains(a.t, a.masterUserRecord.Labels, templateTierHashLabelKey(tier.Name))
+	assert.Equal(a.t, hash, a.masterUserRecord.Labels[templateTierHashLabelKey(tier.Name)])
 }
 
 func (a *Assertion) HasFinalizer() *Assertion {
@@ -192,5 +200,24 @@ func (a *Assertion) DoesNotHaveFinalizer() *Assertion {
 	err := a.loadUaAssertion()
 	require.NoError(a.t, err)
 	assert.Len(a.t, a.masterUserRecord.Finalizers, 0)
+	return a
+}
+
+// DoesNotHaveLabel verifies that the MasterUserRecord does not have
+// a label with the given key
+func (a *Assertion) DoesNotHaveLabel(key string) *Assertion {
+	err := a.loadUaAssertion()
+	require.NoError(a.t, err)
+	assert.NotContains(a.t, a.masterUserRecord.Labels, key)
+	return a
+}
+
+// HasLabel verifies that the MasterUserRecord has
+// a label with the given key
+func (a *Assertion) HasLabel(key string) *Assertion {
+	err := a.loadUaAssertion()
+	require.NoError(a.t, err)
+	require.Contains(a.t, a.masterUserRecord.Labels, key)
+	assert.NotEmpty(a.t, a.masterUserRecord.Labels[key])
 	return a
 }
