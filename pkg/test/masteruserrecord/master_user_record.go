@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -107,20 +108,20 @@ func templateTierHashLabelKey(tierName string) string {
 }
 
 type templateRefs struct {
-	Namespaces       []string `json:"namespaces"`
-	ClusterResources string   `json:"clusterresource,omitempty"`
+	Refs []string `json:"refs"`
 }
 
 // computeTemplateRefsHash computes the hash of the `.spec.namespaces[].templateRef` + `.spec.clusteResource.TemplateRef`
 func computeTemplateRefsHash(tier toolchainv1alpha1.NSTemplateTier) (string, error) {
-	refs := templateRefs{}
+	refs := []string{}
 	for _, ns := range tier.Spec.Namespaces {
-		refs.Namespaces = append(refs.Namespaces, ns.TemplateRef)
+		refs = append(refs, ns.TemplateRef)
 	}
 	if tier.Spec.ClusterResources != nil {
-		refs.ClusterResources = tier.Spec.ClusterResources.TemplateRef
+		refs = append(refs, tier.Spec.ClusterResources.TemplateRef)
 	}
-	m, err := json.Marshal(refs)
+	sort.Strings(refs)
+	m, err := json.Marshal(templateRefs{Refs: refs})
 	if err != nil {
 		return "", err
 	}
@@ -189,19 +190,33 @@ func TargetCluster(targetCluster string) MurModifier {
 	}
 }
 
-func Account(cluster string, tier toolchainv1alpha1.NSTemplateTier) MurModifier {
-
+// Account sets the first account on the MasterUserRecord
+func Account(cluster string, tier toolchainv1alpha1.NSTemplateTier, modifiers ...UaInMurModifier) MurModifier {
 	return func(mur *toolchainv1alpha1.MasterUserRecord) error {
-		// set the user account
+		mur.Spec.UserAccounts = []toolchainv1alpha1.UserAccountEmbedded{}
+		return AdditionalAccount(cluster, tier, modifiers...)(mur)
+	}
+}
+
+// AdditionalAccount sets an additional account on the MasterUserRecord
+func AdditionalAccount(cluster string, tier toolchainv1alpha1.NSTemplateTier, modifiers ...UaInMurModifier) MurModifier {
+	return func(mur *toolchainv1alpha1.MasterUserRecord) error {
 		templates := nstemplateSetFromTier(tier)
-		mur.Spec.UserAccounts = append(mur.Spec.UserAccounts, toolchainv1alpha1.UserAccountEmbedded{
-			TargetCluster: "member-cluster",
+		ua := toolchainv1alpha1.UserAccountEmbedded{
+			TargetCluster: cluster,
+			SyncIndex:     "123abc", // default value
 			Spec: toolchainv1alpha1.UserAccountSpecEmbedded{
 				UserAccountSpecBase: toolchainv1alpha1.UserAccountSpecBase{
+					NSLimit:       tier.Name,
 					NSTemplateSet: templates,
 				},
 			},
-		})
+		}
+		// set the user account
+		mur.Spec.UserAccounts = append(mur.Spec.UserAccounts, ua)
+		for _, modify := range modifiers {
+			modify(cluster, mur)
+		}
 		// set the labels for the tier templates in use
 		hash, err := computeTemplateRefsHash(tier)
 		if err != nil {
@@ -209,17 +224,6 @@ func Account(cluster string, tier toolchainv1alpha1.NSTemplateTier) MurModifier 
 		}
 		mur.ObjectMeta.Labels = map[string]string{
 			toolchainv1alpha1.LabelKeyPrefix + tier.Name + "-tier-hash": hash,
-		}
-		mur.Spec.UserAccounts = []toolchainv1alpha1.UserAccountEmbedded{
-			{
-				TargetCluster: cluster,
-				Spec: toolchainv1alpha1.UserAccountSpecEmbedded{
-					UserAccountSpecBase: toolchainv1alpha1.UserAccountSpecBase{
-						NSLimit:       "basic",
-						NSTemplateSet: templates,
-					},
-				},
-			},
 		}
 		return nil
 	}
@@ -279,6 +283,47 @@ func Namespace(nsType, revision string) UaInMurModifier {
 						return
 					}
 				}
+			}
+		}
+	}
+}
+
+func SyncIndex(index string) UaInMurModifier {
+	return func(targetCluster string, mur *toolchainv1alpha1.MasterUserRecord) {
+		for i, ua := range mur.Spec.UserAccounts {
+			if ua.TargetCluster == targetCluster {
+				mur.Spec.UserAccounts[i].SyncIndex = index
+				return
+			}
+		}
+	}
+}
+
+// CustomNamespaceTemplate sets the given template for the namespace with the given templateRef
+// for the user account on the given cluster
+func CustomNamespaceTemplate(templateRef, template string) UaInMurModifier {
+	return func(targetCluster string, mur *toolchainv1alpha1.MasterUserRecord) {
+		for i, ua := range mur.Spec.UserAccounts {
+			if ua.TargetCluster == targetCluster {
+				for j, ns := range ua.Spec.NSTemplateSet.Namespaces {
+					if ns.TemplateRef == templateRef {
+						mur.Spec.UserAccounts[i].Spec.NSTemplateSet.Namespaces[j].Template = template
+						return
+					}
+				}
+			}
+		}
+	}
+}
+
+// CustomClusterResourcesTemplate sets the given template for the namespace with the given templateRef
+// for the user account on the given cluster
+func CustomClusterResourcesTemplate(template string) UaInMurModifier {
+	return func(targetCluster string, mur *toolchainv1alpha1.MasterUserRecord) {
+		for i, ua := range mur.Spec.UserAccounts {
+			if ua.TargetCluster == targetCluster {
+				mur.Spec.UserAccounts[i].Spec.NSTemplateSet.ClusterResources.Template = template
+				return
 			}
 		}
 	}
