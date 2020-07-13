@@ -27,7 +27,7 @@ func TestGetKubefedConditions(t *testing.T) {
 			}
 			testClusterConditions, err := GetKubefedConditions(readyAttrs)
 			assert.NoError(t, err)
-			assert.Equal(t, 1, len(testClusterConditions.Conditions))
+			assert.Len(t, testClusterConditions.Conditions, 1)
 			for _, testCondition := range testClusterConditions.Conditions {
 				assert.Equal(t, testReason, *testCondition.Reason)
 				assert.Nil(t, testCondition.Message, "message should be nil")
@@ -48,7 +48,7 @@ func TestGetKubefedConditions(t *testing.T) {
 			testClusterConditions, err := GetKubefedConditions(readyAttrs)
 			assert.Error(t, err)
 			assert.Equal(t, msg, err.Error())
-			assert.Equal(t, 1, len(testClusterConditions.Conditions))
+			assert.Len(t, testClusterConditions.Conditions, 1)
 			for _, testCondition := range testClusterConditions.Conditions {
 				assert.Equal(t, expectedReason, *testCondition.Reason)
 				assert.Equal(t, msg, *testCondition.Message)
@@ -69,7 +69,7 @@ func TestGetKubefedConditions(t *testing.T) {
 			testClusterConditions, err := GetKubefedConditions(readyAttrs)
 			assert.Error(t, err)
 			assert.Equal(t, msg, err.Error())
-			assert.Equal(t, 1, len(testClusterConditions.Conditions))
+			assert.Len(t, testClusterConditions.Conditions, 1)
 			for _, testCondition := range testClusterConditions.Conditions {
 				assert.Equal(t, testReason, *testCondition.Reason)
 				assert.Equal(t, msg, *testCondition.Message)
@@ -90,7 +90,7 @@ func TestGetKubefedConditions(t *testing.T) {
 			testClusterConditions, err := GetKubefedConditions(readyAttrs)
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), msg)
-			assert.Equal(t, 1, len(testClusterConditions.Conditions))
+			assert.Len(t, testClusterConditions.Conditions, 1)
 			for _, testCondition := range testClusterConditions.Conditions {
 				assert.Equal(t, testReason, *testCondition.Reason)
 				assert.Contains(t, *testCondition.Message, msg)

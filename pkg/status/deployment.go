@@ -23,7 +23,7 @@ const (
 )
 
 // GetDeploymentStatusConditions looks up a deployment with the given name within the given namespace and checks its status
-// and finally returns a condition summarizing the status and an error if one occurred
+// and finally returns a condition summarizing the status and an error if there was an error or if any conditions are false
 func GetDeploymentStatusConditions(client client.Client, name, namespace string) ([]toolchainv1alpha1.Condition, error) {
 	deploymentName := types.NamespacedName{Namespace: namespace, Name: name}
 	deployment := &appsv1.Deployment{}
@@ -38,9 +38,9 @@ func GetDeploymentStatusConditions(client client.Client, name, namespace string)
 	for _, condition := range deployment.Status.Conditions {
 		if (condition.Type == appsv1.DeploymentAvailable || condition.Type == appsv1.DeploymentProgressing) && condition.Status != corev1.ConditionTrue {
 			// there is a condition that is not ready, return it along with the error
-			errMsg := fmt.Sprintf("%s: %s", ErrMsgDeploymentConditionNotReady, condition.Type)
-			errCondition := NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusDeploymentNotReadyReason, errMsg)
-			return []toolchainv1alpha1.Condition{*errCondition}, fmt.Errorf(errMsg)
+			err := fmt.Errorf("%s: %s", ErrMsgDeploymentConditionNotReady, condition.Type)
+			errCondition := NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusDeploymentNotReadyReason, err.Error())
+			return []toolchainv1alpha1.Condition{*errCondition}, err
 		}
 	}
 
