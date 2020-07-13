@@ -36,7 +36,7 @@ func GetKubefedConditions(attrs KubefedAttributes) (*kubefed_v1beta1.KubeFedClus
 	fedCluster, ok := attrs.GetClusterFunc()
 	if !ok {
 		notFoundMsg := ErrMsgClusterConnectionNotFound
-		notFoundReason := toolchainv1alpha1.ToolchainStatusReasonClusterConnectionNotFound
+		notFoundReason := toolchainv1alpha1.ToolchainStatusClusterConnectionNotFoundReason
 		badClusterStatus := kubefed_v1beta1.KubeFedClusterStatus{
 			Conditions: []kubefed_v1beta1.ClusterCondition{
 				{
@@ -81,7 +81,7 @@ func GetKubefedConditions(attrs KubefedAttributes) (*kubefed_v1beta1.KubeFedClus
 	currentTime := time.Now()
 	if currentTime.After(lastProbedTimePlusMaxDuration) {
 		errMsg := fmt.Sprintf("%s: %s", ErrMsgClusterConnectionLastProbeTimeExceeded, maxDuration.String())
-		errReason := ErrMsgClusterConnectionLastProbeTimeExceeded
+		errReason := toolchainv1alpha1.ToolchainStatusClusterConnectionLastProbeTimeExceededReason
 		badProbeCondition := kubefed_v1beta1.KubeFedClusterStatus{
 			Conditions: []kubefed_v1beta1.ClusterCondition{
 				{

@@ -16,10 +16,10 @@ import (
 
 const (
 	// ErrMsgCannotGetDeployment deployment not found
-	ErrMsgCannotGetDeployment = "unable to get the operator deployment"
+	ErrMsgCannotGetDeployment = "unable to get the deployment"
 
 	// ErrMsgDeploymentConditionNotReady deployment not ready
-	ErrMsgDeploymentConditionNotReady = "operator deployment has unready status conditions"
+	ErrMsgDeploymentConditionNotReady = "deployment has unready status conditions"
 )
 
 // GetDeploymentStatusConditions looks up a deployment with the given name within the given namespace and checks its status
@@ -30,7 +30,7 @@ func GetDeploymentStatusConditions(client client.Client, name, namespace string)
 	err := client.Get(context.TODO(), deploymentName, deployment)
 	if err != nil {
 		err = errs.Wrap(err, ErrMsgCannotGetDeployment)
-		errCondition := NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusReasonDeploymentNotFound, err.Error())
+		errCondition := NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusDeploymentNotFoundReason, err.Error())
 		return []toolchainv1alpha1.Condition{*errCondition}, err
 	}
 
@@ -39,24 +39,24 @@ func GetDeploymentStatusConditions(client client.Client, name, namespace string)
 		if (condition.Type == appsv1.DeploymentAvailable || condition.Type == appsv1.DeploymentProgressing) && condition.Status != corev1.ConditionTrue {
 			// there is a condition that is not ready, return it along with the error
 			errMsg := fmt.Sprintf("%s: %s", ErrMsgDeploymentConditionNotReady, condition.Type)
-			errCondition := NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusReasonDeploymentNotReady, errMsg)
+			errCondition := NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusDeploymentNotReadyReason, errMsg)
 			return []toolchainv1alpha1.Condition{*errCondition}, fmt.Errorf(errMsg)
 		}
 	}
 
 	// no problems with the deployment, return a ready condition
-	operatorReadyCondition := NewComponentReadyCondition(toolchainv1alpha1.ToolchainStatusReasonDeploymentReady)
-	return []toolchainv1alpha1.Condition{*operatorReadyCondition}, nil
+	deploymentReadyCondition := NewComponentReadyCondition(toolchainv1alpha1.ToolchainStatusDeploymentReadyReason)
+	return []toolchainv1alpha1.Condition{*deploymentReadyCondition}, nil
 }
 
-func DeploymentReadyCondition() appsv1.DeploymentCondition {
+func DeploymentAvailableCondition() appsv1.DeploymentCondition {
 	return appsv1.DeploymentCondition{
 		Type:   appsv1.DeploymentAvailable,
 		Status: corev1.ConditionTrue,
 	}
 }
 
-func DeploymentNotReadyCondition() appsv1.DeploymentCondition {
+func DeploymentNotAvailableCondition() appsv1.DeploymentCondition {
 	return appsv1.DeploymentCondition{
 		Type:   appsv1.DeploymentAvailable,
 		Status: corev1.ConditionFalse,
