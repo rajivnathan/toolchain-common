@@ -19,8 +19,7 @@ func TestGetDeploymentStatusConditions(t *testing.T) {
 	t.Run("test deployment status conditions", func(t *testing.T) {
 		t.Run("deployment does not exist", func(t *testing.T) {
 			fakeClient := test.NewFakeClient(t)
-			conditions, err := GetDeploymentStatusConditions(fakeClient, "test-deployment", test.HostOperatorNs)
-			require.Error(t, err)
+			conditions := GetDeploymentStatusConditions(fakeClient, "test-deployment", test.HostOperatorNs)
 			require.Len(t, conditions, 1)
 			require.Equal(t, toolchainv1alpha1.ConditionReady, conditions[0].Type)
 			require.Equal(t, corev1.ConditionFalse, conditions[0].Status)
@@ -32,8 +31,7 @@ func TestGetDeploymentStatusConditions(t *testing.T) {
 
 		t.Run("deployment not available", func(t *testing.T) {
 			fakeClient := test.NewFakeClient(t, fakeDeploymentNotAvailable())
-			conditions, err := GetDeploymentStatusConditions(fakeClient, "test-deployment", test.HostOperatorNs)
-			require.Error(t, err)
+			conditions := GetDeploymentStatusConditions(fakeClient, "test-deployment", test.HostOperatorNs)
 			require.Len(t, conditions, 1)
 			require.Equal(t, toolchainv1alpha1.ConditionReady, conditions[0].Type)
 			require.Equal(t, corev1.ConditionFalse, conditions[0].Status)
@@ -45,8 +43,7 @@ func TestGetDeploymentStatusConditions(t *testing.T) {
 
 		t.Run("deployment not progressing", func(t *testing.T) {
 			fakeClient := test.NewFakeClient(t, fakeDeploymentNotProgressing())
-			conditions, err := GetDeploymentStatusConditions(fakeClient, "test-deployment", test.HostOperatorNs)
-			require.Error(t, err)
+			conditions := GetDeploymentStatusConditions(fakeClient, "test-deployment", test.HostOperatorNs)
 			require.Len(t, conditions, 1)
 			require.Equal(t, toolchainv1alpha1.ConditionReady, conditions[0].Type)
 			require.Equal(t, corev1.ConditionFalse, conditions[0].Status)
@@ -58,8 +55,7 @@ func TestGetDeploymentStatusConditions(t *testing.T) {
 
 		t.Run("deployment ready", func(t *testing.T) {
 			fakeClient := test.NewFakeClient(t, fakeDeploymentReady())
-			conditions, err := GetDeploymentStatusConditions(fakeClient, "test-deployment", test.HostOperatorNs)
-			require.NoError(t, err)
+			conditions := GetDeploymentStatusConditions(fakeClient, "test-deployment", test.HostOperatorNs)
 			require.Len(t, conditions, 1)
 			require.Equal(t, toolchainv1alpha1.ConditionReady, conditions[0].Type)
 			require.Equal(t, corev1.ConditionTrue, conditions[0].Status)

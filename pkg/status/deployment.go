@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	toolchainv1alpha1 "github.com/codeready-toolchain/api/pkg/apis/toolchain/v1alpha1"
+	"github.com/codeready-toolchain/toolchain-common/pkg/condition"
 
 	errs "github.com/pkg/errors"
 
@@ -24,14 +25,14 @@ const (
 
 // GetDeploymentStatusConditions looks up a deployment with the given name within the given namespace and checks its status
 // and finally returns a condition summarizing the status and an error if there was an error or if any conditions are false
-func GetDeploymentStatusConditions(client client.Client, name, namespace string) ([]toolchainv1alpha1.Condition, error) {
+func GetDeploymentStatusConditions(client client.Client, name, namespace string) []toolchainv1alpha1.Condition {
 	deploymentName := types.NamespacedName{Namespace: namespace, Name: name}
 	deployment := &appsv1.Deployment{}
 	err := client.Get(context.TODO(), deploymentName, deployment)
 	if err != nil {
 		err = errs.Wrap(err, ErrMsgCannotGetDeployment)
 		errCondition := NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusDeploymentNotFoundReason, err.Error())
-		return []toolchainv1alpha1.Condition{*errCondition}, err
+		return []toolchainv1alpha1.Condition{*errCondition}
 	}
 
 	// get and check conditions
@@ -40,13 +41,13 @@ func GetDeploymentStatusConditions(client client.Client, name, namespace string)
 			// there is a condition that is not ready, return it along with the error
 			err := fmt.Errorf("%s: %s", ErrMsgDeploymentConditionNotReady, condition.Type)
 			errCondition := NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusDeploymentNotReadyReason, err.Error())
-			return []toolchainv1alpha1.Condition{*errCondition}, err
+			return []toolchainv1alpha1.Condition{*errCondition}
 		}
 	}
 
 	// no problems with the deployment, return a ready condition
 	deploymentReadyCondition := NewComponentReadyCondition(toolchainv1alpha1.ToolchainStatusDeploymentReadyReason)
-	return []toolchainv1alpha1.Condition{*deploymentReadyCondition}, nil
+	return []toolchainv1alpha1.Condition{*deploymentReadyCondition}
 }
 
 func DeploymentAvailableCondition() appsv1.DeploymentCondition {
@@ -75,4 +76,15 @@ func DeploymentNotProgressingCondition() appsv1.DeploymentCondition {
 		Type:   appsv1.DeploymentProgressing,
 		Status: corev1.ConditionFalse,
 	}
+}
+
+func ValidateDeploymentConditions(conditions []toolchainv1alpha1.Condition) error {
+	c, found := condition.FindConditionByType(conditions, toolchainv1alpha1.ConditionReady)
+	if !found {
+		return fmt.Errorf("a ready condition was not found")
+	} else if c.Status != corev1.ConditionTrue {
+		return fmt.Errorf(c.Message)
+	}
+
+	return nil
 }
