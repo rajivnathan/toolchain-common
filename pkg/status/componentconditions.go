@@ -34,7 +34,7 @@ func NewComponentErrorCondition(reason, msg string) *toolchainv1alpha1.Condition
 }
 
 // ValidateComponentConditionReady checks whether the provided conditions signal that the component is ready, returns an error otherwise
-func ValidateComponentConditionReady(conditions []toolchainv1alpha1.Condition) error {
+func ValidateComponentConditionReady(conditions ...toolchainv1alpha1.Condition) error {
 	c, found := condition.FindConditionByType(conditions, toolchainv1alpha1.ConditionReady)
 	if !found {
 		return fmt.Errorf("a ready condition was not found")

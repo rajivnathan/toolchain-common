@@ -39,7 +39,7 @@ func GetKubefedCondition(attrs KubefedAttributes) toolchainv1alpha1.Condition {
 	// check conditions of cluster connection
 	if !kubefed_util.IsClusterReady(fedCluster.ClusterStatus) {
 		for _, c := range fedCluster.ClusterStatus.Conditions {
-			if c.Type == "Ready" {
+			if c.Type == "Ready" && c.Message != nil {
 				return *NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotReadyReason, *c.Message)
 			}
 		}

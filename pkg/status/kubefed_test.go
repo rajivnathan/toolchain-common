@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	toolchainv1alpha1 "github.com/codeready-toolchain/api/pkg/apis/toolchain/v1alpha1"
 	"github.com/codeready-toolchain/toolchain-common/pkg/cluster"
 	"github.com/codeready-toolchain/toolchain-common/pkg/test"
 
@@ -11,29 +12,30 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/kubefed/pkg/apis/core/common"
-	kubefed_common "sigs.k8s.io/kubefed/pkg/apis/core/common"
 	kubefed_v1beta1 "sigs.k8s.io/kubefed/pkg/apis/core/v1beta1"
 )
 
 func TestGetKubefedConditions(t *testing.T) {
 	t.Run("test kubefed conditions", func(t *testing.T) {
 		t.Run("condition ready", func(t *testing.T) {
-			testReason := "ReasonComesFromKubefed"
+			expectedReason := "HostConnectionReady"
 			readyAttrs := KubefedAttributes{
-				GetClusterFunc: newGetHostClusterReady(&testReason),
+				GetClusterFunc: newGetHostClusterReady(&expectedReason),
 				Period:         10 * time.Second,
 				Timeout:        3 * time.Second,
 				Threshold:      3,
 			}
-			testClusterConditions, err := GetKubefedConditions(readyAttrs)
+			conditions := []toolchainv1alpha1.Condition{GetKubefedCondition(readyAttrs)}
+			err := ValidateComponentConditionReady(conditions...)
 			assert.NoError(t, err)
-			assert.Len(t, testClusterConditions.Conditions, 1)
-			for _, testCondition := range testClusterConditions.Conditions {
-				assert.Equal(t, testReason, *testCondition.Reason)
-				assert.Nil(t, testCondition.Message, "message should be nil")
-				assert.Equal(t, corev1.ConditionTrue, testCondition.Status)
-				assert.Equal(t, kubefed_common.ClusterReady, testCondition.Type)
+
+			expected := toolchainv1alpha1.Condition{
+				Type:    toolchainv1alpha1.ConditionReady,
+				Status:  corev1.ConditionTrue,
+				Reason:  expectedReason,
+				Message: "",
 			}
+			test.AssertConditionsMatchAndRecentTimestamps(t, conditions, expected)
 		})
 
 		t.Run("condition cluster not ok", func(t *testing.T) {
@@ -45,58 +47,64 @@ func TestGetKubefedConditions(t *testing.T) {
 				Timeout:        3 * time.Second,
 				Threshold:      3,
 			}
-			testClusterConditions, err := GetKubefedConditions(readyAttrs)
+			conditions := []toolchainv1alpha1.Condition{GetKubefedCondition(readyAttrs)}
+			err := ValidateComponentConditionReady(conditions...)
 			assert.Error(t, err)
 			assert.Equal(t, msg, err.Error())
-			assert.Len(t, testClusterConditions.Conditions, 1)
-			for _, testCondition := range testClusterConditions.Conditions {
-				assert.Equal(t, expectedReason, *testCondition.Reason)
-				assert.Equal(t, msg, *testCondition.Message)
-				assert.Equal(t, corev1.ConditionFalse, testCondition.Status)
-				assert.Equal(t, kubefed_common.ClusterReady, testCondition.Type)
+
+			expected := toolchainv1alpha1.Condition{
+				Type:    toolchainv1alpha1.ConditionReady,
+				Status:  corev1.ConditionFalse,
+				Reason:  expectedReason,
+				Message: msg,
 			}
+			test.AssertConditionsMatchAndRecentTimestamps(t, conditions, expected)
 		})
 
 		t.Run("condition cluster ok but not ready", func(t *testing.T) {
-			testReason := "ReasonComesFromKubefed"
+			expectedReason := "HostConnectionNotReady"
 			msg := "the cluster connection is not ready"
 			readyAttrs := KubefedAttributes{
-				GetClusterFunc: newGetHostClusterOkButNotReady(&testReason, &msg),
+				GetClusterFunc: newGetHostClusterOkButNotReady(&expectedReason, &msg),
 				Period:         10 * time.Second,
 				Timeout:        3 * time.Second,
 				Threshold:      3,
 			}
-			testClusterConditions, err := GetKubefedConditions(readyAttrs)
+			conditions := []toolchainv1alpha1.Condition{GetKubefedCondition(readyAttrs)}
+			err := ValidateComponentConditionReady(conditions...)
 			assert.Error(t, err)
 			assert.Equal(t, msg, err.Error())
-			assert.Len(t, testClusterConditions.Conditions, 1)
-			for _, testCondition := range testClusterConditions.Conditions {
-				assert.Equal(t, testReason, *testCondition.Reason)
-				assert.Equal(t, msg, *testCondition.Message)
-				assert.Equal(t, corev1.ConditionFalse, testCondition.Status)
-				assert.Equal(t, kubefed_common.ClusterReady, testCondition.Type)
+
+			expected := toolchainv1alpha1.Condition{
+				Type:    toolchainv1alpha1.ConditionReady,
+				Status:  corev1.ConditionFalse,
+				Reason:  expectedReason,
+				Message: msg,
 			}
+			test.AssertConditionsMatchAndRecentTimestamps(t, conditions, expected)
 		})
 
 		t.Run("condition last probe time exceeded", func(t *testing.T) {
-			testReason := "KubefedLastProbeTimeExceeded"
-			msg := "exceeded the maximum duration since the last probe"
+			expectedReason := "KubefedLastProbeTimeExceeded"
+			msg := "exceeded the maximum duration since the last probe: 39s"
 			readyAttrs := KubefedAttributes{
-				GetClusterFunc: newGetHostClusterLastProbeTimeExceeded(&testReason, &msg),
+				GetClusterFunc: newGetHostClusterLastProbeTimeExceeded(&expectedReason, &msg),
 				Period:         10 * time.Second,
 				Timeout:        3 * time.Second,
 				Threshold:      3,
 			}
-			testClusterConditions, err := GetKubefedConditions(readyAttrs)
+			conditions := []toolchainv1alpha1.Condition{GetKubefedCondition(readyAttrs)}
+			err := ValidateComponentConditionReady(conditions...)
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), msg)
-			assert.Len(t, testClusterConditions.Conditions, 1)
-			for _, testCondition := range testClusterConditions.Conditions {
-				assert.Equal(t, testReason, *testCondition.Reason)
-				assert.Contains(t, *testCondition.Message, msg)
-				assert.Equal(t, corev1.ConditionFalse, testCondition.Status)
-				assert.Equal(t, kubefed_common.ClusterReady, testCondition.Type)
+
+			expected := toolchainv1alpha1.Condition{
+				Type:    toolchainv1alpha1.ConditionReady,
+				Status:  corev1.ConditionFalse,
+				Reason:  expectedReason,
+				Message: msg,
 			}
+			test.AssertConditionsMatchAndRecentTimestamps(t, conditions, expected)
 		})
 	})
 }
