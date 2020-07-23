@@ -22,6 +22,18 @@ func AddOrUpdateStatusConditions(conditions []toolchainv1alpha1.Condition, newCo
 	return conditions, atLeastOneUpdated
 }
 
+// AddStatusConditions adds the given conditions *without* checking for duplicate types (as opposed to `AddOrUpdateStatusConditions`)
+// Also, it sets the `LastTransitionTime` to `metav1.Now()` for each given condition if needed
+func AddStatusConditions(conditions []toolchainv1alpha1.Condition, newConditions ...toolchainv1alpha1.Condition) []toolchainv1alpha1.Condition {
+	for _, cond := range newConditions {
+		if cond.LastTransitionTime.IsZero() {
+			cond.LastTransitionTime = metav1.Now()
+		}
+		conditions = append(conditions, cond)
+	}
+	return conditions
+}
+
 // FindConditionByType returns first Condition with given conditionType
 // along with bool flag which indicates if the Condition is found or not
 func FindConditionByType(conditions []toolchainv1alpha1.Condition, conditionType toolchainv1alpha1.ConditionType) (toolchainv1alpha1.Condition, bool) {
@@ -52,6 +64,19 @@ func IsNotTrue(conditions []toolchainv1alpha1.Condition, conditionType toolchain
 func IsFalseWithReason(conditions []toolchainv1alpha1.Condition, conditionType toolchainv1alpha1.ConditionType, reason string) bool {
 	c, found := FindConditionByType(conditions, conditionType)
 	return found && c.Status == apiv1.ConditionFalse && c.Reason == reason
+}
+
+// Count counts the conditions that match the given type/status/reason
+func Count(conditions []toolchainv1alpha1.Condition, conditionType toolchainv1alpha1.ConditionType, status apiv1.ConditionStatus, reason string) int {
+	count := 0
+	for _, c := range conditions {
+		if c.Type == conditionType &&
+			c.Status == status &&
+			c.Reason == reason {
+			count++
+		}
+	}
+	return count
 }
 
 func addOrUpdateStatusCondition(conditions []toolchainv1alpha1.Condition, newCondition toolchainv1alpha1.Condition) ([]toolchainv1alpha1.Condition, bool) {
