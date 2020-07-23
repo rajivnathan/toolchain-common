@@ -25,7 +25,7 @@ func TestGetKubefedConditions(t *testing.T) {
 				Timeout:        3 * time.Second,
 				Threshold:      3,
 			}
-			conditions := []toolchainv1alpha1.Condition{GetKubefedCondition(readyAttrs)}
+			conditions := GetKubefedConditions(readyAttrs)
 			err := ValidateComponentConditionReady(conditions...)
 			assert.NoError(t, err)
 
@@ -47,7 +47,7 @@ func TestGetKubefedConditions(t *testing.T) {
 				Timeout:        3 * time.Second,
 				Threshold:      3,
 			}
-			conditions := []toolchainv1alpha1.Condition{GetKubefedCondition(readyAttrs)}
+			conditions := GetKubefedConditions(readyAttrs)
 			err := ValidateComponentConditionReady(conditions...)
 			assert.Error(t, err)
 			assert.Equal(t, msg, err.Error())
@@ -70,7 +70,7 @@ func TestGetKubefedConditions(t *testing.T) {
 				Timeout:        3 * time.Second,
 				Threshold:      3,
 			}
-			conditions := []toolchainv1alpha1.Condition{GetKubefedCondition(readyAttrs)}
+			conditions := GetKubefedConditions(readyAttrs)
 			err := ValidateComponentConditionReady(conditions...)
 			assert.Error(t, err)
 			assert.Equal(t, msg, err.Error())
@@ -93,7 +93,7 @@ func TestGetKubefedConditions(t *testing.T) {
 				Timeout:        3 * time.Second,
 				Threshold:      3,
 			}
-			conditions := []toolchainv1alpha1.Condition{GetKubefedCondition(readyAttrs)}
+			conditions := GetKubefedConditions(readyAttrs)
 			err := ValidateComponentConditionReady(conditions...)
 			assert.Error(t, err)
 			assert.Contains(t, err.Error(), msg)

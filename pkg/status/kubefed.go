@@ -28,23 +28,23 @@ type KubefedAttributes struct {
 	Threshold      int64
 }
 
-// GetKubefedCondition uses the provided kubefed attributes to determine kubefed status
-func GetKubefedCondition(attrs KubefedAttributes) toolchainv1alpha1.Condition {
+// GetKubefedConditions uses the provided kubefed attributes to determine status conditions
+func GetKubefedConditions(attrs KubefedAttributes) []toolchainv1alpha1.Condition {
 	// look up cluster connection status
 	fedCluster, ok := attrs.GetClusterFunc()
 	if !ok {
-		return *NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotFoundReason, ErrMsgClusterConnectionNotFound)
+		return []toolchainv1alpha1.Condition{*NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotFoundReason, ErrMsgClusterConnectionNotFound)}
 	}
 
 	// check conditions of cluster connection
 	if !kubefed_util.IsClusterReady(fedCluster.ClusterStatus) {
 		for _, c := range fedCluster.ClusterStatus.Conditions {
 			if c.Type == "Ready" && c.Message != nil {
-				return *NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotReadyReason, *c.Message)
+				return []toolchainv1alpha1.Condition{*NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotReadyReason, *c.Message)}
 			}
 		}
 		genericErrMsg := "the cluster connection is not ready"
-		return *NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotReadyReason, genericErrMsg)
+		return []toolchainv1alpha1.Condition{*NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotReadyReason, genericErrMsg)}
 	}
 
 	var lastProbeTime metav1.Time
@@ -57,7 +57,7 @@ func GetKubefedCondition(attrs KubefedAttributes) toolchainv1alpha1.Condition {
 	}
 	if !foundLastProbeTime {
 		lastProbeNotFoundMsg := "the time of the last probe could not be determined"
-		return *NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotReadyReason, lastProbeNotFoundMsg)
+		return []toolchainv1alpha1.Condition{*NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotReadyReason, lastProbeNotFoundMsg)}
 	}
 
 	// check that the last probe time is within limits. It should be less than (period + timeout) * threshold
@@ -66,14 +66,14 @@ func GetKubefedCondition(attrs KubefedAttributes) toolchainv1alpha1.Condition {
 	if err != nil {
 		invalidLastProbeMsg := "the maximum duration since the last probe could not be determined - check the configured values for the kubefed health check period, timeout and failure threshold"
 		wrappedErr := errs.Wrap(err, invalidLastProbeMsg)
-		return *NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotReadyReason, wrappedErr.Error())
+		return []toolchainv1alpha1.Condition{*NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionNotReadyReason, wrappedErr.Error())}
 	}
 
 	lastProbedTimePlusMaxDuration := lastProbeTime.Add(maxDuration)
 	currentTime := time.Now()
 	if currentTime.After(lastProbedTimePlusMaxDuration) {
 		errMsg := fmt.Sprintf("%s: %s", ErrMsgClusterConnectionLastProbeTimeExceeded, maxDuration.String())
-		return *NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionLastProbeTimeExceededReason, errMsg)
+		return []toolchainv1alpha1.Condition{*NewComponentErrorCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionLastProbeTimeExceededReason, errMsg)}
 	}
-	return *NewComponentReadyCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionReadyReason)
+	return []toolchainv1alpha1.Condition{*NewComponentReadyCondition(toolchainv1alpha1.ToolchainStatusClusterConnectionReadyReason)}
 }
