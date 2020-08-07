@@ -3,12 +3,15 @@ package masteruserrecord
 import (
 	"context"
 	"fmt"
+	"time"
 
 	toolchainv1alpha1 "github.com/codeready-toolchain/api/pkg/apis/toolchain/v1alpha1"
 	"github.com/codeready-toolchain/toolchain-common/pkg/test"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -99,6 +102,20 @@ func (a *Assertion) HasStatusUserAccounts(targetClusters ...string) *Assertion {
 	for _, cluster := range targetClusters {
 		a.hasUserAccount(cluster)
 	}
+	return a
+}
+
+func (a *Assertion) HasExpectedProvisionedTime(expectedProvisionedTime metav1.Time) *Assertion {
+	err := a.loadUaAssertion()
+	require.NoError(a.t, err)
+
+	if expectedProvisionedTime == (metav1.Time{}) {
+		require.Nil(a.t, a.masterUserRecord.Status.ProvisionedTime)
+	} else {
+		// when the expected ProvisionedTime is not nil, check that the time was recently updated
+		require.WithinDuration(a.t, expectedProvisionedTime.Time, a.masterUserRecord.Status.ProvisionedTime.Time, 1*time.Second)
+	}
+
 	return a
 }
 
