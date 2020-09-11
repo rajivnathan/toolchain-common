@@ -344,3 +344,19 @@ func DisabledMur(disabled bool) MurModifier {
 		return nil
 	}
 }
+
+// ProvisionedMur creates a MurModifier to change the provisioned status value
+func ProvisionedMur(provisionedTime *metav1.Time) MurModifier {
+	return func(mur *toolchainv1alpha1.MasterUserRecord) error {
+		mur.Status.ProvisionedTime = provisionedTime
+		return nil
+	}
+}
+
+// UserIDFromUserSignup creates a MurModifier to change the userID value to match the provided usersignup
+func UserIDFromUserSignup(userSignup *toolchainv1alpha1.UserSignup) MurModifier {
+	return func(mur *toolchainv1alpha1.MasterUserRecord) error {
+		mur.Spec.UserID = userSignup.Name
+		return nil
+	}
+}
