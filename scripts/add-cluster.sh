@@ -10,7 +10,7 @@ user_help () {
     echo "-mn, --member-ns      namespace where member-operator is running"
     echo "-hn, --host-ns        namespace where host-operator is running"
     echo "-s,  --single-cluster running both operators on single cluster"
-    echo "-ms, --multi-ns       use this flag for subsequent member-operators running on the same cluster to avoid resource naming collisions (mainly for testing purposes)"
+    echo "-ms, --multi-ns       use this flag for subsequent member-operators running in a different namespaces on the same cluster to avoid resource naming collisions (mainly for testing purposes)"
     echo "-kc, --kube-config    kubeconfig for managing multiple clusters"
     echo "-sc, --sandbox-config sandbox config file for managing Dev Sandbox instance"
     echo "-le, --lets-encrypt   use let's encrypt certificate"
