@@ -244,6 +244,7 @@ fi
 
 echo "Getting ${JOINING_CLUSTER_TYPE} SA token"
 oc get sa -n ${OPERATOR_NS}
+oc get sa ${SA_NAME} -n ${OPERATOR_NS} -o json ${OC_ADDITIONAL_PARAMS} | jq -r .secrets[].name
 SA_SECRET=`oc get sa ${SA_NAME} -n ${OPERATOR_NS} -o json ${OC_ADDITIONAL_PARAMS} | jq -r .secrets[].name | grep token`
 SA_TOKEN=`oc get secret ${SA_SECRET} -n ${OPERATOR_NS}  -o json ${OC_ADDITIONAL_PARAMS} | jq -r '.data["token"]' | base64 --decode`
 if [[ ${LETS_ENCRYPT} == "true" ]]; then
