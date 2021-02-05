@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eE
+set -xeE
 
 user_help () {
     echo "Creates ToolchainCluster"
