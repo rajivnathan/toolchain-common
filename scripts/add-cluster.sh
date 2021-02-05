@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -xeE
+set -xe
 
 user_help () {
     echo "Creates ToolchainCluster"
@@ -16,13 +16,6 @@ user_help () {
     echo "-le, --lets-encrypt   use let's encrypt certificate"
     exit 0
 }
-
-failure() {
-  local lineno=$1
-  local msg=$2
-  echo "Failed at $lineno: $msg"
-}
-trap 'failure ${LINENO} "$BASH_COMMAND"' ERR
 
 login_to_cluster() {
     if [[ ${SINGLE_CLUSTER} != "true" ]]; then
