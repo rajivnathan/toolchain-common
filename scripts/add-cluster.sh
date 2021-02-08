@@ -200,6 +200,7 @@ while test $# -gt 0; do
       esac
 done
 
+JOIN_TIMESTAMP=$(date +'%d%H%M%S')
 CLUSTER_JOIN_TO="host"
 
 if [[ -n ${SANDBOX_CONFIG} ]]; then
@@ -282,7 +283,7 @@ if [[ ${MULTI_NS} != "true" ]]; then
 else
     echo "Multi-namespace member mode"
     TOOLCHAINCLUSTER_NAME=${JOINING_CLUSTER_TYPE_NAME}-${JOINING_CLUSTER_NAME}-${OPERATOR_NS}
-    OWNER_CLUSTER_NAME=${CLUSTER_JOIN_TO}-${CLUSTER_JOIN_TO_NAME}-${CLUSTER_JOIN_TO_OPERATOR_NS}
+    OWNER_CLUSTER_NAME=${CLUSTER_JOIN_TO}-${CLUSTER_JOIN_TO_NAME}-${JOIN_TIMESTAMP}
 fi
 
 TOOLCHAINCLUSTER_CRD="apiVersion: toolchain.dev.openshift.com/v1alpha1
