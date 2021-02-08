@@ -231,13 +231,13 @@ login_to_cluster ${JOINING_CLUSTER_TYPE}
 if [[ ${JOINING_CLUSTER_TYPE_NAME} != "e2e" ]]; then
     SA_NAME="toolchaincluster-${JOINING_CLUSTER_TYPE}"
     if [[ ${MULTI_NS} == "true" ]]; then
-      SA_NAME="${SA_NAME}-${OPERATOR_NS}"
+      SA_NAME="${OPERATOR_NS}"
     fi
     create_service_account
 else
     SA_NAME="e2e-service-account"
     if [[ ${MULTI_NS} == "true" ]]; then
-      SA_NAME="${SA_NAME}-${OPERATOR_NS}"
+      SA_NAME="${OPERATOR_NS}"
     fi
     create_service_account_e2e
 fi
