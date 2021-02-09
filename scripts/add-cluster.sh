@@ -10,7 +10,7 @@ user_help () {
     echo "-mn, --member-ns      namespace where member-operator is running"
     echo "-hn, --host-ns        namespace where host-operator is running"
     echo "-s,  --single-cluster running both operators on single cluster"
-    echo "-ms, --multi-ns       use this flag for subsequent member-operators running in a different namespaces on the same cluster to avoid resource naming collisions (mainly for testing purposes)"
+    echo "-mm, --multi-member   enables deploying multiple members in a single cluster, provide a unique id that will be used as a suffix for additional member cluster names"
     echo "-kc, --kube-config    kubeconfig for managing multiple clusters"
     echo "-sc, --sandbox-config sandbox config file for managing Dev Sandbox instance"
     echo "-le, --lets-encrypt   use let's encrypt certificate"
@@ -184,8 +184,9 @@ while test $# -gt 0; do
                 SINGLE_CLUSTER=true
                 shift
                 ;;
-            -ms|--multi-ns)
-                MULTI_NS=true
+            -mm|--multi-member)
+                shift
+                MULTI_MEMBER=$1
                 shift
                 ;;
             -le|--lets-encrypt)
@@ -230,13 +231,13 @@ login_to_cluster ${JOINING_CLUSTER_TYPE}
 
 if [[ ${JOINING_CLUSTER_TYPE_NAME} != "e2e" ]]; then
     SA_NAME="toolchaincluster-${JOINING_CLUSTER_TYPE}"
-    if [[ ${MULTI_NS} == "true" ]]; then
+    if [[ ! -z ${MULTI_MEMBER} ]]; then
       SA_NAME="${OPERATOR_NS}"
     fi
     create_service_account
 else
     SA_NAME="e2e-service-account"
-    if [[ ${MULTI_NS} == "true" ]]; then
+    if [[ ! -z ${MULTI_MEMBER} ]]; then
       SA_NAME="${OPERATOR_NS}"
     fi
     create_service_account_e2e
@@ -274,13 +275,13 @@ if [[ -n `oc get secret -n ${CLUSTER_JOIN_TO_OPERATOR_NS} ${OC_ADDITIONAL_PARAMS
 fi
 oc create secret generic ${SECRET_NAME} --from-literal=token="${SA_TOKEN}" --from-literal=ca.crt="${SA_CA_CRT}" -n ${CLUSTER_JOIN_TO_OPERATOR_NS} ${OC_ADDITIONAL_PARAMS}
 
-if [[ ${MULTI_NS} != "true" ]]; then
-    TOOLCHAINCLUSTER_NAME=${JOINING_CLUSTER_TYPE_NAME}-${JOINING_CLUSTER_NAME}
-    OWNER_CLUSTER_NAME=${CLUSTER_JOIN_TO}-${CLUSTER_JOIN_TO_NAME}
-else
+TOOLCHAINCLUSTER_NAME=${JOINING_CLUSTER_TYPE_NAME}-${JOINING_CLUSTER_NAME}
+OWNER_CLUSTER_NAME=${CLUSTER_JOIN_TO}-${CLUSTER_JOIN_TO_NAME}
+
+if [[ ! -z ${MULTI_MEMBER} ]]; then
     echo "Multi-namespace member mode"
-    TOOLCHAINCLUSTER_NAME=${JOINING_CLUSTER_TYPE_NAME}-${JOINING_CLUSTER_NAME}-2
-    OWNER_CLUSTER_NAME=${CLUSTER_JOIN_TO}-${CLUSTER_JOIN_TO_NAME}-2
+    TOOLCHAINCLUSTER_NAME=${JOINING_CLUSTER_TYPE_NAME}-${JOINING_CLUSTER_NAME}-${MULTI_MEMBER}
+    OWNER_CLUSTER_NAME=${CLUSTER_JOIN_TO}-${CLUSTER_JOIN_TO_NAME}-${MULTI_MEMBER}
 fi
 
 TOOLCHAINCLUSTER_CRD="apiVersion: toolchain.dev.openshift.com/v1alpha1
