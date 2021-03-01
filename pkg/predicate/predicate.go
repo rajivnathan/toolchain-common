@@ -1,8 +1,11 @@
 package predicate
 
 import (
+	"reflect"
+
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 var log = logf.Log.WithName("generation_not_changed_predicate").WithName("eventFilters")
@@ -48,4 +51,41 @@ func (OnlyUpdateWhenGenerationNotChanged) Delete(e event.DeleteEvent) bool {
 // Generic implements Predicate
 func (OnlyUpdateWhenGenerationNotChanged) Generic(e event.GenericEvent) bool {
 	return false
+}
+
+// LabelsAndGenerationPredicate is based on the default predicate functions but overrides the Update function
+// to only return true if either the labels or generation have changed, status changes won't cause reconciliation
+type LabelsAndGenerationPredicate struct {
+	predicate.Funcs
+}
+
+// Update only returns true if either the labels or generation have changed
+func (LabelsAndGenerationPredicate) Update(e event.UpdateEvent) bool {
+
+	if e.MetaOld == nil {
+		log.Error(nil, "Update event has no old metadata", "event", e)
+		return false
+	}
+	if e.ObjectOld == nil {
+		log.Error(nil, "Update event has no old runtime object to update", "event", e)
+		return false
+	}
+	if e.ObjectNew == nil {
+		log.Error(nil, "Update event has no new runtime object for update", "event", e)
+		return false
+	}
+	if e.MetaNew == nil {
+		log.Error(nil, "Update event has no new metadata", "event", e)
+		return false
+	}
+
+	// reconcile if the labels have changed
+	if !reflect.DeepEqual(e.MetaOld.GetLabels(), e.MetaNew.GetLabels()) {
+		return true
+	}
+
+	if e.MetaNew.GetGeneration() == e.MetaOld.GetGeneration() && e.MetaNew.GetGeneration() != 0 {
+		return false
+	}
+	return true
 }
