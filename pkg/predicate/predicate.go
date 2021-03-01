@@ -80,12 +80,6 @@ func (LabelsAndGenerationPredicate) Update(e event.UpdateEvent) bool {
 	}
 
 	// reconcile if the labels have changed
-	if !reflect.DeepEqual(e.MetaOld.GetLabels(), e.MetaNew.GetLabels()) {
-		return true
-	}
-
-	if e.MetaNew.GetGeneration() == e.MetaOld.GetGeneration() && e.MetaNew.GetGeneration() != 0 {
-		return false
-	}
-	return true
+	return !reflect.DeepEqual(e.MetaOld.GetLabels(), e.MetaNew.GetLabels()) ||
+		e.MetaNew.GetGeneration() != e.MetaOld.GetGeneration()
 }
