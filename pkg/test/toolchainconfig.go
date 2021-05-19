@@ -5,108 +5,109 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type ToolchainConfigOptionFunc func(config *toolchainv1alpha1.ToolchainConfig)
+type HostConfigOptionFunc func(config *toolchainv1alpha1.HostConfig)
 
-type ToolchainConfigOption interface {
-	Apply(config *toolchainv1alpha1.ToolchainConfig)
+// TODO: rename HostConfigOption with a ToolchainConfigOption once the HostOperatorConfig is removed, see https://issues.redhat.com/browse/CRT-1120
+type HostConfigOption interface {
+	Apply(config *toolchainv1alpha1.HostConfig)
 }
 
-type ToolchainConfigOptionImpl struct {
-	toApply []ToolchainConfigOptionFunc
+type HostConfigOptionImpl struct {
+	toApply []HostConfigOptionFunc
 }
 
-func (option *ToolchainConfigOptionImpl) Apply(config *toolchainv1alpha1.ToolchainConfig) {
+func (option *HostConfigOptionImpl) Apply(config *toolchainv1alpha1.HostConfig) {
 	for _, apply := range option.toApply {
 		apply(config)
 	}
 }
 
-func (option *ToolchainConfigOptionImpl) addFunction(funcToAdd ToolchainConfigOptionFunc) {
+func (option *HostConfigOptionImpl) addFunction(funcToAdd HostConfigOptionFunc) {
 	option.toApply = append(option.toApply, funcToAdd)
 }
 
-type AutomaticApprovalCfgOption struct {
-	*ToolchainConfigOptionImpl
+type AutomaticApprovalOption struct {
+	*HostConfigOptionImpl
 }
 
-func AutomaticApprovalCfg() *AutomaticApprovalCfgOption {
-	o := &AutomaticApprovalCfgOption{
-		ToolchainConfigOptionImpl: &ToolchainConfigOptionImpl{},
+func AutomaticApproval() *AutomaticApprovalOption {
+	o := &AutomaticApprovalOption{
+		HostConfigOptionImpl: &HostConfigOptionImpl{},
 	}
-	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
-		config.Spec.Host.AutomaticApproval = toolchainv1alpha1.AutomaticApprovalCfg{}
+	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
+		config.AutomaticApproval = toolchainv1alpha1.AutomaticApproval{}
 	})
 	return o
 }
 
-func (o AutomaticApprovalCfgOption) EnabledCfg() AutomaticApprovalCfgOption {
-	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
+func (o AutomaticApprovalOption) Enabled() AutomaticApprovalOption {
+	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
 		val := true
-		config.Spec.Host.AutomaticApproval.Enabled = &val
+		config.AutomaticApproval.Enabled = &val
 	})
 	return o
 }
 
-func (o AutomaticApprovalCfgOption) DisabledCfg() AutomaticApprovalCfgOption {
-	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
+func (o AutomaticApprovalOption) Disabled() AutomaticApprovalOption {
+	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
 		val := false
-		config.Spec.Host.AutomaticApproval.Enabled = &val
+		config.AutomaticApproval.Enabled = &val
 	})
 	return o
 }
 
-type DeactivationCfgOption struct {
-	*ToolchainConfigOptionImpl
+type DeactivationOption struct {
+	*HostConfigOptionImpl
 }
 
-func DeactivationCfg() *DeactivationCfgOption {
-	o := &DeactivationCfgOption{
-		ToolchainConfigOptionImpl: &ToolchainConfigOptionImpl{},
+func Deactivation() *DeactivationOption {
+	o := &DeactivationOption{
+		HostConfigOptionImpl: &HostConfigOptionImpl{},
 	}
-	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
-		config.Spec.Host.Deactivation = toolchainv1alpha1.DeactivationCfg{}
+	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
+		config.Deactivation = toolchainv1alpha1.Deactivation{}
 	})
 	return o
 }
 
-func (o DeactivationCfgOption) DeactivatingNotificationDays(days int) DeactivationCfgOption {
-	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
-		config.Spec.Host.Deactivation.DeactivatingNotificationDays = &days
+func (o DeactivationOption) DeactivatingNotificationDays(days int) DeactivationOption {
+	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
+		config.Deactivation.DeactivatingNotificationDays = &days
 	})
 	return o
 }
 
-type PerMemberClusterCfgOption func(map[string]int)
+type PerMemberClusterOption func(map[string]int)
 
-func PerMemberClusterCfg(name string, value int) PerMemberClusterCfgOption {
+func PerMemberCluster(name string, value int) PerMemberClusterOption {
 	return func(clusters map[string]int) {
 		clusters[name] = value
 	}
 }
 
-func (o AutomaticApprovalCfgOption) ResourceCapThreshold(defaultThreshold int, perMember ...PerMemberClusterCfgOption) AutomaticApprovalCfgOption {
-	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
-		config.Spec.Host.AutomaticApproval.ResourceCapacityThreshold.DefaultThreshold = &defaultThreshold
-		config.Spec.Host.AutomaticApproval.ResourceCapacityThreshold.SpecificPerMemberCluster = map[string]int{}
+func (o AutomaticApprovalOption) ResourceCapThreshold(defaultThreshold int, perMember ...PerMemberClusterOption) AutomaticApprovalOption {
+	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
+		config.AutomaticApproval.ResourceCapacityThreshold.DefaultThreshold = &defaultThreshold
+		config.AutomaticApproval.ResourceCapacityThreshold.SpecificPerMemberCluster = map[string]int{}
 		for _, add := range perMember {
-			add(config.Spec.Host.AutomaticApproval.ResourceCapacityThreshold.SpecificPerMemberCluster)
+			add(config.AutomaticApproval.ResourceCapacityThreshold.SpecificPerMemberCluster)
 		}
 	})
 	return o
 }
 
-func (o AutomaticApprovalCfgOption) MaxUsersNumber(overall int, perMember ...PerMemberClusterCfgOption) AutomaticApprovalCfgOption {
-	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
-		config.Spec.Host.AutomaticApproval.MaxNumberOfUsers.Overall = &overall
-		config.Spec.Host.AutomaticApproval.MaxNumberOfUsers.SpecificPerMemberCluster = map[string]int{}
+func (o AutomaticApprovalOption) MaxUsersNumber(overall int, perMember ...PerMemberClusterOption) AutomaticApprovalOption {
+	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
+		config.AutomaticApproval.MaxNumberOfUsers.Overall = &overall
+		config.AutomaticApproval.MaxNumberOfUsers.SpecificPerMemberCluster = map[string]int{}
 		for _, add := range perMember {
-			add(config.Spec.Host.AutomaticApproval.MaxNumberOfUsers.SpecificPerMemberCluster)
+			add(config.AutomaticApproval.MaxNumberOfUsers.SpecificPerMemberCluster)
 		}
 	})
 	return o
 }
 
-func NewToolchainConfig(options ...ToolchainConfigOption) *toolchainv1alpha1.ToolchainConfig {
+func NewToolchainConfig(options ...HostConfigOption) *toolchainv1alpha1.ToolchainConfig {
 	toolchainConfig := &toolchainv1alpha1.ToolchainConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: HostOperatorNs,
@@ -114,7 +115,8 @@ func NewToolchainConfig(options ...ToolchainConfigOption) *toolchainv1alpha1.Too
 		},
 	}
 	for _, option := range options {
-		option.Apply(toolchainConfig)
+		// TODO: pass toolchainConfig directly as param once HostOperatorConfig is removed, see https://issues.redhat.com/browse/CRT-1120
+		option.Apply(&toolchainConfig.Spec.Host)
 	}
 	return toolchainConfig
 }
