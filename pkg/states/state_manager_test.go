@@ -1,14 +1,14 @@
 package states
 
 import (
-	"github.com/codeready-toolchain/api/pkg/apis/toolchain/v1alpha1"
+	toolchainv1alpha1 "github.com/codeready-toolchain/api/api/v1alpha1"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestStateManager(t *testing.T) {
 
-	u := &v1alpha1.UserSignup{}
+	u := &toolchainv1alpha1.UserSignup{}
 
 	t.Run("test approved", func(t *testing.T) {
 
@@ -16,7 +16,7 @@ func TestStateManager(t *testing.T) {
 
 		require.True(t, Approved(u))
 		require.Len(t, u.Spec.States, 1)
-		require.Equal(t, v1alpha1.UserSignupStateApproved, u.Spec.States[0])
+		require.Equal(t, toolchainv1alpha1.UserSignupStateApproved, u.Spec.States[0])
 
 		SetApproved(u, false)
 
@@ -49,7 +49,7 @@ func TestStateManager(t *testing.T) {
 		require.True(t, VerificationRequired(u))
 
 		require.Len(t, u.Spec.States, 1)
-		require.Equal(t, v1alpha1.UserSignupStateVerificationRequired, u.Spec.States[0])
+		require.Equal(t, toolchainv1alpha1.UserSignupStateVerificationRequired, u.Spec.States[0])
 
 		SetVerificationRequired(u, false)
 
@@ -64,7 +64,7 @@ func TestStateManager(t *testing.T) {
 
 		require.False(t, Deactivated(u))
 		require.Len(t, u.Spec.States, 1)
-		require.Equal(t, v1alpha1.UserSignupStateDeactivating, u.Spec.States[0])
+		require.Equal(t, toolchainv1alpha1.UserSignupStateDeactivating, u.Spec.States[0])
 
 		SetDeactivating(u, false)
 
@@ -83,7 +83,7 @@ func TestStateManager(t *testing.T) {
 
 		require.True(t, Deactivated(u))
 		require.Len(t, u.Spec.States, 1)
-		require.Equal(t, v1alpha1.UserSignupStateDeactivated, u.Spec.States[0])
+		require.Equal(t, toolchainv1alpha1.UserSignupStateDeactivated, u.Spec.States[0])
 
 		SetDeactivated(u, false)
 		require.Len(t, u.Spec.States, 0)
@@ -95,40 +95,5 @@ func TestStateManager(t *testing.T) {
 		// Setting deactivated should also set approved and deactivating to false
 		require.False(t, Approved(u))
 		require.False(t, Deactivating(u))
-	})
-
-	t.Run("test active", func(t *testing.T) {
-		u = &v1alpha1.UserSignup{}
-		// Should not be active by default
-		require.False(t, Active(u))
-
-		SetApproved(u, true)
-		// Should be active when approved
-		require.True(t, Active(u))
-
-		SetVerificationRequired(u, true)
-		// Should not be active when verification is required
-		require.False(t, Active(u))
-
-		SetDeactivated(u, true)
-		// Should not be active when deactivated
-		require.False(t, Active(u))
-		require.False(t, Approved(u))
-
-		// Reapprove
-		SetApproved(u, true)
-
-		// Deactivated should now be false
-		require.False(t, Deactivated(u))
-
-		// Verification Required should now be false
-		require.False(t, VerificationRequired(u))
-
-		// Should be active
-		require.True(t, Active(u))
-
-		SetDeactivating(u, true)
-		// Should be active when deactivating
-		require.True(t, Active(u))
 	})
 }

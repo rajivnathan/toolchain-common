@@ -3,8 +3,7 @@ package cluster
 import (
 	"testing"
 
-	"github.com/codeready-toolchain/api/pkg/apis"
-	"github.com/codeready-toolchain/api/pkg/apis/toolchain/v1alpha1"
+	toolchainv1alpha1 "github.com/codeready-toolchain/api/api/v1alpha1"
 	"github.com/codeready-toolchain/toolchain-common/pkg/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,10 +16,10 @@ import (
 func TestRefreshCacheInService(t *testing.T) {
 	// given
 	defer gock.Off()
-	status := test.NewClusterStatus(v1alpha1.ToolchainClusterReady, corev1.ConditionTrue)
+	status := test.NewClusterStatus(toolchainv1alpha1.ToolchainClusterReady, corev1.ConditionTrue)
 	toolchainCluster, sec := test.NewToolchainCluster("east", "secret", status, map[string]string{"ownerClusterName": test.NameMember})
 	s := scheme.Scheme
-	err := apis.AddToScheme(s)
+	err := toolchainv1alpha1.AddToScheme(s)
 	require.NoError(t, err)
 	cl := test.NewFakeClient(t, toolchainCluster, sec)
 	service := NewToolchainClusterService(cl, logf.Log, "test-namespace", 0)
@@ -69,7 +68,7 @@ func TestRefreshCacheInService(t *testing.T) {
 	})
 }
 
-func assertMemberCluster(t *testing.T, cachedCluster *CachedToolchainCluster, status v1alpha1.ToolchainClusterStatus) {
+func assertMemberCluster(t *testing.T, cachedCluster *CachedToolchainCluster, status toolchainv1alpha1.ToolchainClusterStatus) {
 	assert.Equal(t, Member, cachedCluster.Type)
 	assert.Equal(t, status, *cachedCluster.ClusterStatus)
 	assert.Equal(t, test.NameMember, cachedCluster.OwnerClusterName)
