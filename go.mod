@@ -1,7 +1,7 @@
 module github.com/codeready-toolchain/toolchain-common
 
 require (
-	github.com/codeready-toolchain/api v0.0.0-20210525072732-81a688cbd126
+	github.com/codeready-toolchain/api v0.0.0-20210527231005-3bb0f668e644
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/emicklei/go-restful v2.12.0+incompatible // indirect
 	github.com/go-logr/logr v0.4.0
@@ -39,6 +39,6 @@ replace (
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6 // avoids case-insensitive import collision: "github.com/googleapis/gnostic/openapiv2" and "github.com/googleapis/gnostic/OpenAPIv2"
 )
 
-replace github.com/codeready-toolchain/api => github.com/rajivnathan/api v0.0.0-20210527163644-0e3c3324b9d6
+replace github.com/codeready-toolchain/api => github.com/rajivnathan/api v0.0.0-20210529134443-e4e40830bc89
 
 go 1.14
