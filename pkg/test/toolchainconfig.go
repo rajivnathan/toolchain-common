@@ -5,73 +5,73 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type HostConfigOptionFunc func(config *toolchainv1alpha1.HostConfig)
+type ToolchainConfigOptionFunc func(config *toolchainv1alpha1.ToolchainConfig)
 
 type ToolchainConfigOption interface {
 	Apply(config *toolchainv1alpha1.ToolchainConfig)
 }
 
-type HostConfigOptionImpl struct {
-	toApply []HostConfigOptionFunc
+type ToolchainConfigOptionImpl struct {
+	toApply []ToolchainConfigOptionFunc
 }
 
-func (option *HostConfigOptionImpl) Apply(config *toolchainv1alpha1.HostConfig) {
+func (option *ToolchainConfigOptionImpl) Apply(config *toolchainv1alpha1.ToolchainConfig) {
 	for _, apply := range option.toApply {
 		apply(config)
 	}
 }
 
-func (option *HostConfigOptionImpl) addFunction(funcToAdd HostConfigOptionFunc) {
+func (option *ToolchainConfigOptionImpl) addFunction(funcToAdd ToolchainConfigOptionFunc) {
 	option.toApply = append(option.toApply, funcToAdd)
 }
 
 type AutomaticApprovalOption struct {
-	*HostConfigOptionImpl
+	*ToolchainConfigOptionImpl
 }
 
 func AutomaticApproval() *AutomaticApprovalOption {
 	o := &AutomaticApprovalOption{
-		HostConfigOptionImpl: &HostConfigOptionImpl{},
+		ToolchainConfigOptionImpl: &ToolchainConfigOptionImpl{},
 	}
-	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
-		config.AutomaticApproval = toolchainv1alpha1.AutomaticApproval{}
+	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
+		config.Spec.Host.AutomaticApproval = toolchainv1alpha1.AutomaticApproval{}
 	})
 	return o
 }
 
 func (o AutomaticApprovalOption) Enabled() AutomaticApprovalOption {
-	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
+	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
 		val := true
-		config.AutomaticApproval.Enabled = &val
+		config.Spec.Host.AutomaticApproval.Enabled = &val
 	})
 	return o
 }
 
 func (o AutomaticApprovalOption) Disabled() AutomaticApprovalOption {
-	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
+	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
 		val := false
-		config.AutomaticApproval.Enabled = &val
+		config.Spec.Host.AutomaticApproval.Enabled = &val
 	})
 	return o
 }
 
 type DeactivationOption struct {
-	*HostConfigOptionImpl
+	*ToolchainConfigOptionImpl
 }
 
 func Deactivation() *DeactivationOption {
 	o := &DeactivationOption{
-		HostConfigOptionImpl: &HostConfigOptionImpl{},
+		ToolchainConfigOptionImpl: &ToolchainConfigOptionImpl{},
 	}
-	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
-		config.Deactivation = toolchainv1alpha1.Deactivation{}
+	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
+		config.Spec.Host.Deactivation = toolchainv1alpha1.Deactivation{}
 	})
 	return o
 }
 
 func (o DeactivationOption) DeactivatingNotificationDays(days int) DeactivationOption {
-	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
-		config.Deactivation.DeactivatingNotificationDays = &days
+	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
+		config.Spec.Host.Deactivation.DeactivatingNotificationDays = &days
 	})
 	return o
 }
@@ -85,22 +85,22 @@ func PerMemberCluster(name string, value int) PerMemberClusterOption {
 }
 
 func (o AutomaticApprovalOption) ResourceCapThreshold(defaultThreshold int, perMember ...PerMemberClusterOption) AutomaticApprovalOption {
-	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
-		config.AutomaticApproval.ResourceCapacityThreshold.DefaultThreshold = &defaultThreshold
-		config.AutomaticApproval.ResourceCapacityThreshold.SpecificPerMemberCluster = map[string]int{}
+	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
+		config.Spec.Host.AutomaticApproval.ResourceCapacityThreshold.DefaultThreshold = &defaultThreshold
+		config.Spec.Host.AutomaticApproval.ResourceCapacityThreshold.SpecificPerMemberCluster = map[string]int{}
 		for _, add := range perMember {
-			add(config.AutomaticApproval.ResourceCapacityThreshold.SpecificPerMemberCluster)
+			add(config.Spec.Host.AutomaticApproval.ResourceCapacityThreshold.SpecificPerMemberCluster)
 		}
 	})
 	return o
 }
 
 func (o AutomaticApprovalOption) MaxUsersNumber(overall int, perMember ...PerMemberClusterOption) AutomaticApprovalOption {
-	o.addFunction(func(config *toolchainv1alpha1.HostConfig) {
-		config.AutomaticApproval.MaxNumberOfUsers.Overall = &overall
-		config.AutomaticApproval.MaxNumberOfUsers.SpecificPerMemberCluster = map[string]int{}
+	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
+		config.Spec.Host.AutomaticApproval.MaxNumberOfUsers.Overall = &overall
+		config.Spec.Host.AutomaticApproval.MaxNumberOfUsers.SpecificPerMemberCluster = map[string]int{}
 		for _, add := range perMember {
-			add(config.AutomaticApproval.MaxNumberOfUsers.SpecificPerMemberCluster)
+			add(config.Spec.Host.AutomaticApproval.MaxNumberOfUsers.SpecificPerMemberCluster)
 		}
 	})
 	return o
