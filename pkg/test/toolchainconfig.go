@@ -7,9 +7,8 @@ import (
 
 type HostConfigOptionFunc func(config *toolchainv1alpha1.HostConfig)
 
-// TODO: rename HostConfigOption with a ToolchainConfigOption once the HostOperatorConfig is removed, see https://issues.redhat.com/browse/CRT-1120
-type HostConfigOption interface {
-	Apply(config *toolchainv1alpha1.HostConfig)
+type ToolchainConfigOption interface {
+	Apply(config *toolchainv1alpha1.ToolchainConfig)
 }
 
 type HostConfigOptionImpl struct {
@@ -107,7 +106,7 @@ func (o AutomaticApprovalOption) MaxUsersNumber(overall int, perMember ...PerMem
 	return o
 }
 
-func NewToolchainConfig(options ...HostConfigOption) *toolchainv1alpha1.ToolchainConfig {
+func NewToolchainConfig(options ...ToolchainConfigOption) *toolchainv1alpha1.ToolchainConfig {
 	toolchainConfig := &toolchainv1alpha1.ToolchainConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: HostOperatorNs,
@@ -115,8 +114,7 @@ func NewToolchainConfig(options ...HostConfigOption) *toolchainv1alpha1.Toolchai
 		},
 	}
 	for _, option := range options {
-		// TODO: pass toolchainConfig directly as param once HostOperatorConfig is removed, see https://issues.redhat.com/browse/CRT-1120
-		option.Apply(&toolchainConfig.Spec.Host)
+		option.Apply(toolchainConfig)
 	}
 	return toolchainConfig
 }
