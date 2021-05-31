@@ -67,6 +67,7 @@ rules:
   - "registrationservices"
   - "templateupdaterequests"
   - "tiertemplates"
+  - "toolchainconfigs"
   - "toolchainclusters"
   - "toolchainstatuses"
   - "usersignups"
@@ -86,6 +87,7 @@ rules:
   resources:
   - "idlers"
   - "nstemplatesets"
+  - "memberoperatorconfigs"
   - "memberstatuses"
   - "toolchainclusters"
   - "useraccounts"
