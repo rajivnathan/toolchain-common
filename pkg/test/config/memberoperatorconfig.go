@@ -1,7 +1,8 @@
-package test
+package config
 
 import (
 	toolchainv1alpha1 "github.com/codeready-toolchain/api/api/v1alpha1"
+	"github.com/codeready-toolchain/toolchain-common/pkg/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -49,7 +50,7 @@ func (o MemberStatusOption) RefreshPeriod(refreshPeriod string) MemberStatusOpti
 func NewMemberOperatorConfig(options ...MemberOperatorConfigOption) *toolchainv1alpha1.MemberOperatorConfig {
 	memberOperatorConfig := &toolchainv1alpha1.MemberOperatorConfig{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: MemberOperatorNs,
+			Namespace: test.MemberOperatorNs,
 			Name:      "config",
 		},
 	}
