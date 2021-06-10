@@ -13,8 +13,8 @@ import (
 	toolchainv1alpha1 "github.com/codeready-toolchain/api/api/v1alpha1"
 	"github.com/codeready-toolchain/toolchain-common/pkg/condition"
 	"github.com/codeready-toolchain/toolchain-common/pkg/test"
+	uuid "github.com/gofrs/uuid"
 	"github.com/redhat-cop/operator-utils/pkg/util"
-	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -81,7 +81,7 @@ func NewMasterUserRecords(t *testing.T, size int, nameFmt string, modifiers ...M
 }
 
 func NewMasterUserRecord(t *testing.T, userName string, modifiers ...MurModifier) *toolchainv1alpha1.MasterUserRecord {
-	userID := uuid.NewV4().String()
+	userID := uuid.Must(uuid.NewV4()).String()
 	hash, err := computeTemplateRefsHash(DefaultNSTemplateTier) // we can assume the JSON marshalling will always work
 	require.NoError(t, err)
 	mur := &toolchainv1alpha1.MasterUserRecord{

@@ -6,13 +6,13 @@ import (
 	"errors"
 	"testing"
 
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/gofrs/uuid"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	errs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -60,7 +60,7 @@ func TestNewClient(t *testing.T) {
 		})
 
 		t.Run("update object with data", func(t *testing.T) {
-			key := types.NamespacedName{Namespace: "somenamespace", Name: "somename" + uuid.NewV4().String()}
+			key := types.NamespacedName{Namespace: "somenamespace", Name: "somename" + uuid.Must(uuid.NewV4()).String()}
 			data := make(map[string][]byte)
 			data["key"] = []byte("value")
 			created := &v1.Secret{
@@ -247,7 +247,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func createAndGetSecret(t *testing.T, fclient *FakeClient) (*v1.Secret, *v1.Secret) {
-	key := types.NamespacedName{Namespace: "somenamespace", Name: "somename" + uuid.NewV4().String()}
+	key := types.NamespacedName{Namespace: "somenamespace", Name: "somename" + uuid.Must(uuid.NewV4()).String()}
 	data := make(map[string]string)
 	data["key"] = "value"
 	created := &v1.Secret{
@@ -275,7 +275,7 @@ func createAndGetSecret(t *testing.T, fclient *FakeClient) (*v1.Secret, *v1.Secr
 }
 
 func createAndGetDeployment(t *testing.T, fclient *FakeClient) (*appsv1.Deployment, *appsv1.Deployment) {
-	key := types.NamespacedName{Namespace: "somenamespace", Name: "somename" + uuid.NewV4().String()}
+	key := types.NamespacedName{Namespace: "somenamespace", Name: "somename" + uuid.Must(uuid.NewV4()).String()}
 	replicas := int32(1)
 	created := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
