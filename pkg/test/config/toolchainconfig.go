@@ -1,7 +1,8 @@
-package test
+package config
 
 import (
 	toolchainv1alpha1 "github.com/codeready-toolchain/api/api/v1alpha1"
+	"github.com/codeready-toolchain/toolchain-common/pkg/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -106,10 +107,38 @@ func (o AutomaticApprovalOption) MaxUsersNumber(overall int, perMember ...PerMem
 	return o
 }
 
+type MembersOption struct {
+	*ToolchainConfigOptionImpl
+}
+
+func Members() *MembersOption {
+	o := &MembersOption{
+		ToolchainConfigOptionImpl: &ToolchainConfigOptionImpl{},
+	}
+	return o
+}
+
+func (o MembersOption) Default(memberConfigSpec toolchainv1alpha1.MemberOperatorConfigSpec) MembersOption {
+	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
+		config.Spec.Members.Default = memberConfigSpec
+	})
+	return o
+}
+
+func (o MembersOption) SpecificPerMemberCluster(clusterName string, memberConfigSpec toolchainv1alpha1.MemberOperatorConfigSpec) MembersOption {
+	o.addFunction(func(config *toolchainv1alpha1.ToolchainConfig) {
+		if config.Spec.Members.SpecificPerMemberCluster == nil {
+			config.Spec.Members.SpecificPerMemberCluster = make(map[string]toolchainv1alpha1.MemberOperatorConfigSpec)
+		}
+		config.Spec.Members.SpecificPerMemberCluster[clusterName] = memberConfigSpec
+	})
+	return o
+}
+
 func NewToolchainConfig(options ...ToolchainConfigOption) *toolchainv1alpha1.ToolchainConfig {
 	toolchainConfig := &toolchainv1alpha1.ToolchainConfig{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: HostOperatorNs,
+			Namespace: test.HostOperatorNs,
 			Name:      "config",
 		},
 	}
