@@ -177,16 +177,16 @@ func Console() *ConsoleOption {
 	return o
 }
 
-func (o ConsoleOption) Namespace(namespace string) ConsoleOption {
+func (o ConsoleOption) Namespace(value string) ConsoleOption {
 	o.addFunction(func(config *toolchainv1alpha1.MemberOperatorConfig) {
-		config.Spec.Console.Namespace = &namespace
+		config.Spec.Console.Namespace = &value
 	})
 	return o
 }
 
-func (o ConsoleOption) RouteName(routeName string) ConsoleOption {
+func (o ConsoleOption) RouteName(value string) ConsoleOption {
 	o.addFunction(func(config *toolchainv1alpha1.MemberOperatorConfig) {
-		config.Spec.Console.RouteName = &routeName
+		config.Spec.Console.RouteName = &value
 	})
 	return o
 }
@@ -205,9 +205,9 @@ func MemberStatus() *MemberStatusOption {
 	return o
 }
 
-func (o MemberStatusOption) RefreshPeriod(refreshPeriod string) MemberStatusOption {
+func (o MemberStatusOption) RefreshPeriod(value string) MemberStatusOption {
 	o.addFunction(func(config *toolchainv1alpha1.MemberOperatorConfig) {
-		config.Spec.MemberStatus.RefreshPeriod = &refreshPeriod
+		config.Spec.MemberStatus.RefreshPeriod = &value
 	})
 	return o
 }
@@ -226,16 +226,16 @@ func ToolchainCluster() *ToolchainClusterOption {
 	return o
 }
 
-func (o ToolchainClusterOption) HealthCheckPeriod(duration string) ToolchainClusterOption {
+func (o ToolchainClusterOption) HealthCheckPeriod(value string) ToolchainClusterOption {
 	o.addFunction(func(config *toolchainv1alpha1.MemberOperatorConfig) {
-		config.Spec.ToolchainCluster.HealthCheckPeriod = &duration
+		config.Spec.ToolchainCluster.HealthCheckPeriod = &value
 	})
 	return o
 }
 
-func (o ToolchainClusterOption) HealthCheckTimeout(duration string) ToolchainClusterOption {
+func (o ToolchainClusterOption) HealthCheckTimeout(value string) ToolchainClusterOption {
 	o.addFunction(func(config *toolchainv1alpha1.MemberOperatorConfig) {
-		config.Spec.ToolchainCluster.HealthCheckTimeout = &duration
+		config.Spec.ToolchainCluster.HealthCheckTimeout = &value
 	})
 	return o
 }
@@ -254,16 +254,16 @@ func Webhook() *WebhookOption {
 	return o
 }
 
-func (o WebhookOption) Deploy(deploy bool) WebhookOption {
+func (o WebhookOption) Deploy(value bool) WebhookOption {
 	o.addFunction(func(config *toolchainv1alpha1.MemberOperatorConfig) {
-		config.Spec.Webhook.Deploy = &deploy
+		config.Spec.Webhook.Deploy = &value
 	})
 	return o
 }
 
-func (o WebhookOption) Image(image string) WebhookOption {
+func (o WebhookOption) Image(value string) WebhookOption {
 	o.addFunction(func(config *toolchainv1alpha1.MemberOperatorConfig) {
-		config.Spec.Webhook.Image = &image
+		config.Spec.Webhook.Image = &value
 	})
 	return o
 }
