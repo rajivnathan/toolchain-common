@@ -40,9 +40,9 @@ func Auth() *AuthOption {
 	return o
 }
 
-func (o AuthOption) IdP(value string) AuthOption { //nolint:golint
+func (o AuthOption) Idp(value string) AuthOption {
 	o.addFunction(func(config *toolchainv1alpha1.MemberOperatorConfig) {
-		config.Spec.Auth.IdP = &value
+		config.Spec.Auth.Idp = &value
 	})
 	return o
 }
