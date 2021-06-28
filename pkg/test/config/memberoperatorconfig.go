@@ -280,3 +280,10 @@ func NewMemberOperatorConfig(options ...MemberOperatorConfigOption) *toolchainv1
 	}
 	return memberOperatorConfig
 }
+
+func ModifyMemberOperatorConfig(memberOperatorConfig *toolchainv1alpha1.MemberOperatorConfig, options ...MemberOperatorConfigOption) *toolchainv1alpha1.MemberOperatorConfig {
+	for _, option := range options {
+		option.Apply(memberOperatorConfig)
+	}
+	return memberOperatorConfig
+}
