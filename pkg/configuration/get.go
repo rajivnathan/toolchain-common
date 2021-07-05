@@ -23,6 +23,8 @@ func GetString(value *string, defaultValue string) string {
 	return defaultValue
 }
 
+// GetDuration parses the given value as a Duration and returns the value.
+// The default value is returned if the value is nil or cannot be parsed as a duration.
 func GetDuration(value *string, defaultValue time.Duration) time.Duration {
 	durationAsString := GetString(value, "invalid value")
 	d, err := time.ParseDuration(durationAsString)
