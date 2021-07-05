@@ -1,5 +1,7 @@
 package configuration
 
+import "time"
+
 func GetBool(value *bool, defaultValue bool) bool {
 	if value != nil {
 		return *value
@@ -19,6 +21,15 @@ func GetString(value *string, defaultValue string) string {
 		return *value
 	}
 	return defaultValue
+}
+
+func GetDuration(value *string, defaultValue time.Duration) time.Duration {
+	durationAsString := GetString(value, "invalid value")
+	d, err := time.ParseDuration(durationAsString)
+	if err != nil {
+		return defaultValue
+	}
+	return d
 }
 
 func CopyOf(originalMap map[string]map[string]string) map[string]map[string]string {

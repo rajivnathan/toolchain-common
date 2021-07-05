@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -38,7 +39,7 @@ func TestGetInt(t *testing.T) {
 		// when
 		res := GetInt(nil, 5)
 		// then
-		assert.Equal(t, res, 5)
+		assert.Equal(t, 5, res)
 	})
 	t.Run("use value when provided", func(t *testing.T) {
 		// given
@@ -46,7 +47,7 @@ func TestGetInt(t *testing.T) {
 		// when
 		res := GetInt(&v, 5)
 		// then
-		assert.Equal(t, res, 10)
+		assert.Equal(t, 10, res)
 	})
 }
 
@@ -55,7 +56,7 @@ func TestGetString(t *testing.T) {
 		// when
 		res := GetString(nil, "defValue")
 		// then
-		assert.Equal(t, res, "defValue")
+		assert.Equal(t, "defValue", res)
 	})
 	t.Run("use value when provided", func(t *testing.T) {
 		// given
@@ -63,8 +64,33 @@ func TestGetString(t *testing.T) {
 		// when
 		res := GetString(&v, "defValue")
 		// then
-		assert.Equal(t, res, "providedValue")
+		assert.Equal(t, "providedValue", res)
 
+	})
+}
+
+func TestGetDuration(t *testing.T) {
+	t.Run("use default value when provided value is nil", func(t *testing.T) {
+		// when
+		res := GetDuration(nil, 5*time.Minute)
+		// then
+		assert.Equal(t, 5*time.Minute, res)
+	})
+	t.Run("use defualt value when provided value is invalid", func(t *testing.T) {
+		// given
+		v := "invalid"
+		// when
+		res := GetDuration(&v, 5*time.Minute)
+		// then
+		assert.Equal(t, 5*time.Minute, res)
+	})
+	t.Run("use value when provided", func(t *testing.T) {
+		// given
+		v := "10m"
+		// when
+		res := GetDuration(&v, 5*time.Minute)
+		// then
+		assert.Equal(t, 10*time.Minute, res)
 	})
 }
 
