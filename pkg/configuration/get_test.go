@@ -76,7 +76,7 @@ func TestGetDuration(t *testing.T) {
 		// then
 		assert.Equal(t, 5*time.Minute, res)
 	})
-	t.Run("use defualt value when provided value is invalid", func(t *testing.T) {
+	t.Run("use default value when provided value is invalid", func(t *testing.T) {
 		// given
 		v := "invalid"
 		// when
