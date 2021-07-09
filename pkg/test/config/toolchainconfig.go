@@ -2,9 +2,6 @@ package config
 
 import (
 	toolchainv1alpha1 "github.com/codeready-toolchain/api/api/v1alpha1"
-	"github.com/codeready-toolchain/toolchain-common/pkg/test"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type EnvName string
@@ -208,7 +205,7 @@ type NotificationSecretOption struct {
 
 func (o NotificationsOption) Secret() *NotificationSecretOption {
 	c := &NotificationSecretOption{
-		ToolchainConfigOptionImpl: &ToolchainConfigOptionImpl{},
+		ToolchainConfigOptionImpl: o.ToolchainConfigOptionImpl,
 	}
 	return c
 }
@@ -385,16 +382,3 @@ func (o MembersOption) SpecificPerMemberCluster(clusterName string, memberConfig
 }
 
 //---End of Member Configurations---//
-
-func NewToolchainConfig(options ...ToolchainConfigOption) *toolchainv1alpha1.ToolchainConfig {
-	toolchainConfig := &toolchainv1alpha1.ToolchainConfig{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: test.HostOperatorNs,
-			Name:      "config",
-		},
-	}
-	for _, option := range options {
-		option.Apply(toolchainConfig)
-	}
-	return toolchainConfig
-}
