@@ -3,6 +3,7 @@ package toolchaincluster
 import (
 	"context"
 	"testing"
+	"time"
 
 	toolchainv1alpha1 "github.com/codeready-toolchain/api/api/v1alpha1"
 	"github.com/codeready-toolchain/toolchain-common/pkg/cluster"
@@ -97,7 +98,7 @@ func TestClusterHealthChecks(t *testing.T) {
 }
 
 func setupCachedClusters(t *testing.T, cl *test.FakeClient, clusters ...*toolchainv1alpha1.ToolchainCluster) func() {
-	service := cluster.NewToolchainClusterService(cl, logf.Log, "test-namespace", 0)
+	service := cluster.NewToolchainClusterService(cl, logf.Log, "test-namespace", func() time.Duration { return 0 })
 	for _, clustr := range clusters {
 		err := service.AddOrUpdateToolchainCluster(clustr)
 		require.NoError(t, err)

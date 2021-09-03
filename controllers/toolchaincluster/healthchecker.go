@@ -12,7 +12,6 @@ import (
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
 	kubeclientset "k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -28,11 +27,15 @@ const (
 	clusterReachableMsg    = "cluster is reachable"
 )
 
-func StartHealthChecks(ctx context.Context, mgr manager.Manager, namespace string, period time.Duration) {
-	logger.Info("starting health checks", "period", period)
-	go wait.Until(func() {
-		updateClusterStatuses(namespace, mgr.GetClient())
-	}, period, ctx.Done())
+func StartHealthChecks(ctx context.Context, mgr manager.Manager, namespace string, period func() time.Duration) {
+	logger.Info("starting health checks", "period", period())
+	// update cache periodically
+	go func() {
+		for {
+			updateClusterStatuses(namespace, mgr.GetClient())
+			time.Sleep(period())
+		}
+	}()
 }
 
 type HealthChecker struct {

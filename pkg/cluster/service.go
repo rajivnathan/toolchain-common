@@ -40,12 +40,12 @@ type ToolchainClusterService struct {
 }
 
 // NewToolchainClusterService creates a new instance of ToolchainClusterService object and assigns the refreshCache function to the cache instance
-func NewToolchainClusterService(client client.Client, log logr.Logger, namespace string, timeout time.Duration) ToolchainClusterService {
+func NewToolchainClusterService(client client.Client, log logr.Logger, namespace string, healthCheckTimeout func() time.Duration) ToolchainClusterService {
 	service := ToolchainClusterService{
 		client:    client,
 		log:       log,
 		namespace: namespace,
-		timeout:   timeout,
+		timeout:   healthCheckTimeout(),
 	}
 	clusterCache.refreshCache = service.refreshCache
 	return service

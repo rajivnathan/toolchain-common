@@ -194,5 +194,5 @@ func Labels(clType cluster.Type, ns, ownerClusterName string) map[string]string 
 }
 
 func newToolchainClusterService(cl client.Client) cluster.ToolchainClusterService {
-	return cluster.NewToolchainClusterService(cl, logf.Log, "test-namespace", 3*time.Second)
+	return cluster.NewToolchainClusterService(cl, logf.Log, "test-namespace", func() time.Duration { return 3 * time.Second })
 }

@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"testing"
+	"time"
 
 	toolchainv1alpha1 "github.com/codeready-toolchain/api/api/v1alpha1"
 	"github.com/codeready-toolchain/toolchain-common/pkg/test"
@@ -22,7 +23,7 @@ func TestRefreshCacheInService(t *testing.T) {
 	err := toolchainv1alpha1.AddToScheme(s)
 	require.NoError(t, err)
 	cl := test.NewFakeClient(t, toolchainCluster, sec)
-	service := NewToolchainClusterService(cl, logf.Log, "test-namespace", 0)
+	service := NewToolchainClusterService(cl, logf.Log, "test-namespace", func() time.Duration { return 0 })
 
 	t.Run("the member cluster should be retrieved when refreshCache func is called", func(t *testing.T) {
 		// given

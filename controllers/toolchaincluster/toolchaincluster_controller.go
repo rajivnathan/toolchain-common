@@ -16,9 +16,9 @@ import (
 )
 
 // NewReconciler returns a new Reconciler
-func NewReconciler(mgr manager.Manager, namespace string, timeout time.Duration) *Reconciler {
+func NewReconciler(mgr manager.Manager, namespace string, healthCheckTimeout func() time.Duration) *Reconciler {
 	cacheLog := log.Log.WithName("toolchaincluster_cache")
-	clusterCacheService := cluster.NewToolchainClusterService(mgr.GetClient(), cacheLog, namespace, timeout)
+	clusterCacheService := cluster.NewToolchainClusterService(mgr.GetClient(), cacheLog, namespace, healthCheckTimeout)
 	return &Reconciler{
 		client:              mgr.GetClient(),
 		scheme:              mgr.GetScheme(),
