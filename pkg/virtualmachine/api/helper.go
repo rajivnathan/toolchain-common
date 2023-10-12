@@ -1,7 +1,7 @@
 package api
 
 import (
-	vmapiv1 "github.com/codeready-toolchain/toolchain-common/pkg/virtualmachine/api/v1"
+	vmapiv1 "github.com/codeready-toolchain/toolchain-common/pkg/virtualmachine/types"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
